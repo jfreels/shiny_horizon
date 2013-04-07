@@ -28,7 +28,7 @@ shinyUI(pageWithSidebar(
     downloadButton(outputId="exportData",label="Export Data"),
     # contact info
     helpText(HTML("<br>*Created by: <a href = \"https://twitter.com/jfreels4\">@jfreels4</a>
-                  <br>*github <a href = \"https://github.com/jfreels/portfolio\">code</a>
+                  <br>*github <a href = \"https://github.com/jfreels/shiny_horizon\">code</a>
                   ")
     )
   ),
