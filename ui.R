@@ -35,9 +35,12 @@ shinyUI(pageWithSidebar(
 # MAIN PANEL
   mainPanel(
     tabsetPanel(
-      tabPanel("Horizon",
-        plotOutput("horizon_plot"),
-        plotOutput("horizon_plot2")
+      tabPanel("Rolling",
+        plotOutput("rolling_plot12"),
+        plotOutput("rolling_plot36")
+      ),
+      tabPanel("Drawdown",
+        plotOutput("drawdown_plot")
       ),
       tabPanel("Data Preview",
         verbatimTextOutput("data_choices"),

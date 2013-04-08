@@ -4,5 +4,7 @@
 ### github: https://github.com/jfreels
 
 # Load libraries
-libs<-c("lubridate","plyr","reshape2","ggplot2","xts","PerformanceAnalytics","quantmod","RColorBrewer")
+libs<-c("lubridate","plyr","reshape2","ggplot2","xts","PerformanceAnalytics","quantmod","RColorBrewer","devtools")
 lapply(libs,require,character.only=TRUE)
+install_github(repo="r_jfreels",username="jfreels")
+library(jfreels)
