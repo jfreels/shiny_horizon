@@ -19,32 +19,43 @@ xtsToLong<-function (Xts) {
 
 # http://timelyportfolio.blogspot.com/2012/08/horizon-on-ggplot2.html
 horizon.panel.ggplot <- function(df, title) {
-  origin = 0
-  horizonscale = 0.1    
   #df parameter should be in form of date (x), grouping, and a value (y)
   colnames(df) <- c("date","grouping","y")
+  # numbers above the origin will be colored differently than numbers below the origin
+  origin = 0
+  #get number of bands for the loop
+  #limit to 3 so it will be much more manageable
+  nbands = 3
+  # make this value equal to 1/nbands * range of the dataset
+  upperLimit <- max(df[,3],na.rm=TRUE)
+  lowerLimit <- min(df[,3],na.rm=TRUE)
+  limit<- max(upperLimit,abs(lowerLimit))
+  horizonscale <- (1/nbands)*limit
   #get some decent colors from RColorBrewer
   #we will use colors on the edges so 2:4 for red and 7:9 for blue
   require(RColorBrewer)
   col.brew <- brewer.pal(name="RdBu",n=10)
-  
-  #get number of bands for the loop
-  #limit to 3 so it will be much more manageable
-  nbands = 3
-  
   #loop through nbands to add a column for each of the positive and negative bands
   for (i in 1:nbands) {
     #do positive
     df[,paste("ypos",i,sep="")] <- ifelse(df$y > origin,
+                                          # true
                                           ifelse(abs(df$y) > horizonscale * i,
+                                                 # true
                                                  horizonscale,
+                                                 # false
                                                  ifelse(abs(df$y) - (horizonscale * (i - 1) - origin) > origin, abs(df$y) - (horizonscale * (i - 1) - origin), origin)),
+                                          # false
                                           origin)
     #do negative
     df[,paste("yneg",i,sep="")] <- ifelse(df$y < origin,
+                                          # true
                                           ifelse(abs(df$y) > horizonscale * i,
+                                                 # true
                                                  horizonscale,
+                                                 # false
                                                  ifelse(abs(df$y) - (horizonscale * (i - 1) - origin) > origin, abs(df$y) - (horizonscale * (i - 1) - origin), origin)),
+                                          # false
                                           origin)
   }
   #melt data frame now that we have added a column for each band
@@ -68,15 +79,14 @@ horizon.panel.ggplot <- function(df, title) {
     ylim(origin,horizonscale) +   #limit plot to origin and horizonscale
     facet_grid(grouping ~ .) +    #do new subplot for each group
     theme_bw() +                  #this is optional, but I prefer to default
-    opts(legend.position = "none",    #remove legend
-         strip.text.y = theme_text(),#rotate strip text to horizontal 
-         axis.text.y = theme_blank(),#remove y axis labels
-         axis.ticks = theme_blank(), #remove tick marks
-         axis.title.y = theme_blank(),#remove title for the y axis
-         axis.title.x = theme_blank(),#remove title for the x axis
-         title = title,               #add a title from function parameter
-         plot.title = theme_text(size=16, face="bold", hjust=0))+ #format title
-    theme(strip.text.y=element_text(angle=0, hjust=1))
+    theme(legend.position = "none",    #remove legend
+          strip.text.y=element_text(angle=0, hjust=1),#rotate strip text to horizontal 
+          axis.text.y = element_blank(),#remove y axis labels
+          axis.ticks = element_blank(), #remove tick marks
+          axis.title.y = element_blank(),#remove title for the y axis
+          axis.title.x = element_blank(),#remove title for the x axis
+          plot.title = element_text(size=16, face="bold", hjust=0))+ #format title
+    labs(title=title)
   
   return(p)
 }
@@ -176,13 +186,15 @@ shinyServer(function(input, output) {
 
 ### Tab: "Horizon"
   output$horizon_plot<-renderPlot({
-    dat<-ddply(melted_dataset(),.(variable),transform,roll=rollapply(value,12,FUN=function (x) {tail(cumprod(na.omit(x) + 1), 1) - 1},fill=NA,align="right"))
-    print(horizon.panel.ggplot(dat[,-3],"Horizon Plot: 12 Month Rolling Returns"))
+    dat<-ddply(na.omit(melted_dataset()),.(variable),transform,roll=rollapply(value,12,FUN=function (x) {tail(cumprod(na.omit(x) + 1), 1) - 1},fill=NA,align="right"))
+    dat<-dat[,-3]    
+    print(horizon.panel.ggplot(dat,"Horizon Plot: 12 Month Rolling Returns"))
   })
   
   output$horizon_plot2<-renderPlot({
-    dat<-ddply(melted_dataset(),.(variable),transform,roll=rollapply(value,36,FUN=function (x) {tail(cumprod(na.omit(x) + 1), 1) - 1},fill=NA,align="right"))
-    print(horizon.panel.ggplot(dat[,-3],"Horizon Plot: 36 Month Rolling Returns"))
+    dat<-ddply(na.omit(melted_dataset()),.(variable),transform,roll=rollapply(value,36,FUN=function (x) {tail(cumprod(na.omit(x) + 1), 1) - 1},fill=NA,align="right"))
+    dat<-dat[,-3]  
+    print(horizon.panel.ggplot(dat,"Horizon Plot: 36 Month Rolling Returns"))
   })
   
 ### Tab: "Data Preview"
