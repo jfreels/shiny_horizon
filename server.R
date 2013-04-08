@@ -109,7 +109,7 @@ shinyServer(function(input, output) {
     print(horizon.panel.ggplot(dat,"Horizon Plot: 12 Month Rolling Returns"))
   })
   
-  output$rollign_plot36<-renderPlot({
+  output$rolling_plot36<-renderPlot({
     dat<-ddply(na.omit(melted_dataset()),.(variable),transform,roll=rollapply(value,36,FUN=function (x) {tail(cumprod(na.omit(x) + 1), 1) - 1},fill=NA,align="right"))
     dat<-dat[,-3]  
     print(horizon.panel.ggplot(dat,"Horizon Plot: 36 Month Rolling Returns"))
